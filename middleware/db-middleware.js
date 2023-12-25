@@ -1,12 +1,24 @@
-const { MongoClient} = require('mongodb')
+const { MongoClient } = require('mongodb');
 
 const databaseMiddleware = async (req, res, next) => {
-    const mongoClient = await new MongoClient ("mongodb://mongo:7SrVXhXt35C1CnkGHJo7@containers-us-west-61.railway.app:5475").connect()
-    db = mongoClient.db('blogs')
+    try {
+        
+        const mongoClient = new MongoClient("mongodb://localhost:27017", {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
 
-    req.db = db
+        await mongoClient.connect(); 
+        const db = mongoClient.db('blogs');
+        req.db = db; 
+        next();
+    } catch (error) {
+        console.error('Error connecting to MongoDB:', error);
+        if (mongoClient) {
+            await mongoClient.close();
+        }
+        next(error);
+    }
+};
 
-    next()
-}
-
-module.exports =  databaseMiddleware
+module.exports = databaseMiddleware;
